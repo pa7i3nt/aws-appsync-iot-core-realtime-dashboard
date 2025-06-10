@@ -23,7 +23,7 @@ const geoStack = backend.createStack("geo-stack");
 
 // create a map
 const map = new CfnMap(geoStack, "Map", {
-  mapName: "SensorMap",
+  mapName: "SensorMap2",
   description: "Sensor Map",
   configuration: {
     style: "VectorEsriDarkGrayCanvas",
@@ -32,7 +32,7 @@ const map = new CfnMap(geoStack, "Map", {
   tags: [
     {
       key: "name",
-      value: "SensorMap",
+      value: "SensorMap2",
     },
   ],
 });
