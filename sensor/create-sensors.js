@@ -138,7 +138,7 @@ const parser = new ArgumentParser({
 });
 
 parser.add_argument('--profile', {default: 'default'});
-parser.add_argument('--region', {default: 'us-east-1'});
+parser.add_argument('--region', {default: 'ap-southeast-1'});
 
 args = parser.parse_args()
 
