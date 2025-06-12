@@ -1,6 +1,7 @@
 import { type ClientSchema, a, defineData } from "@aws-amplify/backend";
 import { listSensors } from "../functions/list-sensors/resource";
 import { sendSensorValue } from "../functions/send-sensor-value/resource";
+import { createTracker } from "../functions/create-tracker-update-current-position/resource"
 
 const schema = a
   .schema({
@@ -33,6 +34,7 @@ const schema = a
   .authorization((allow) => [
     allow.authenticated(),
     allow.resource(sendSensorValue),
+    allow.resource(createTracker),
   ]);
 
 export type Schema = ClientSchema<typeof schema>;

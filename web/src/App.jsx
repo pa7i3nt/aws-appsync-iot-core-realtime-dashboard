@@ -4,7 +4,6 @@ import { Amplify } from "aws-amplify";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import MapPage from "./MapPage";
-import VerifyEmail from "./VerifyEmail";
 
 import awsExports from "../amplify_outputs.json";
 
@@ -14,7 +13,6 @@ const App = () => {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/verify" element={<VerifyEmail />} />
         <Route path="/" element={<MapPage />} />
       </Routes>
     </BrowserRouter>

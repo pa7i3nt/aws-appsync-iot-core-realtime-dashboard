@@ -1,34 +1,55 @@
-import { defineBackend } from "@aws-amplify/backend";
-import { Policy, PolicyStatement, ServicePrincipal } from "aws-cdk-lib/aws-iam";
-import { CfnMap } from "aws-cdk-lib/aws-location";
-import { CfnTopicRule } from "aws-cdk-lib/aws-iot";
-import { auth } from "./auth/resource";
-import { data } from "./data/resource";
-import { listSensors } from "./functions/list-sensors/resource";
-import { sendSensorValue } from "./functions/send-sensor-value/resource";
-import { customEmailTrigger } from "./functions/custom-email-trigger/resource";
+import { defineBackend } from "@aws-amplify/backend"
+import { Policy, PolicyStatement, ServicePrincipal } from "aws-cdk-lib/aws-iam"
+import { CfnTopicRule } from "aws-cdk-lib/aws-iot"
+import { CfnMap, CfnTracker } from "aws-cdk-lib/aws-location"
+import { auth } from "./auth/resource"
+import { data } from "./data/resource"
+import { createTracker } from "./functions/create-tracker-update-current-position/resource"
+import { listSensors } from "./functions/list-sensors/resource"
+import { sendSensorValue } from "./functions/send-sensor-value/resource"
+
+const VERSION_NUMBER = 9
 
 const backend = defineBackend({
   auth,
   data,
   listSensors,
   sendSensorValue,
-  customEmailTrigger,
+  createTracker
 });
 
 // disable unauthenticated access
 const { cfnIdentityPool } = backend.auth.resources.cfnResources;
 cfnIdentityPool.allowUnauthenticatedIdentities = false;
 
-// Add the Lambda trigger to Cognito for email verification
-backend.auth.resources.userPool.addTrigger('PreSignUp', backend.customEmailTrigger.resources.lambda);
+// create tracker stack
+const trackerStack = backend.createStack("tracker-stack")
+
+// create a tracker
+const tracker = new CfnTracker(trackerStack, `MyTracker${VERSION_NUMBER}`, {
+  trackerName: `MyTracker${VERSION_NUMBER}`
+})
+
+const myTrackerPolicy = new Policy(trackerStack, "TrackerPolicy", {
+  policyName: "myTrackerPolicy",
+  statements: [
+    new PolicyStatement({
+      actions: [
+        "*"
+      ],
+      resources: [tracker.attrArn],
+    }),
+  ],
+});
+
+backend.auth.resources.authenticatedUserIamRole.attachInlinePolicy(myTrackerPolicy);
 
 // Mapping Resources
 const geoStack = backend.createStack("geo-stack");
 
 // create a map
 const map = new CfnMap(geoStack, "Map", {
-  mapName: "SensorMap7",
+  mapName: `SensorMap${VERSION_NUMBER}`,
   description: "Sensor Map",
   configuration: {
     style: "VectorEsriDarkGrayCanvas",
@@ -37,7 +58,7 @@ const map = new CfnMap(geoStack, "Map", {
   tags: [
     {
       key: "name",
-      value: "SensorMap7",
+      value: `SensorMap${VERSION_NUMBER}`,
     },
   ],
 });
@@ -92,16 +113,36 @@ const iotStack = backend.createStack("iot-stack");
 
 const sendSensorValueLambda = backend.sendSensorValue.resources.lambda;
 
+// custom lambda
+const createTrackerLambda = backend.createTracker.resources.lambda
+createTrackerLambda.addToRolePolicy(
+  new PolicyStatement({
+    actions: ["iot:*"],
+    resources: ["arn:aws:iot:*:*:*"],
+  })
+)
+createTrackerLambda.addToRolePolicy(
+  new PolicyStatement({
+    actions: ["*"],
+    resources: ["arn:aws:geo:*:*:*"],
+  })
+)
+
 // create a rule to process messages from the sensors - send them to the lambda function
-const rule = new CfnTopicRule(iotStack, "SendSensorValueRule", {
+const ruleSendSensorValue = new CfnTopicRule(iotStack, "SendSensorValueRule", {
   topicRulePayload: {
     sql: "select * as data, topic(4) as sensorId from 'dt/bay-health/SF/+/sensor-value'",
     actions: [
       {
         lambda: {
           functionArn: sendSensorValueLambda.functionArn,
-        },
+        }
       },
+      {
+        lambda: {
+          functionArn: createTrackerLambda.functionArn,
+        },
+      }
     ],
   },
 });
@@ -110,4 +151,23 @@ const rule = new CfnTopicRule(iotStack, "SendSensorValueRule", {
 sendSensorValueLambda.addPermission("AllowIoTInvoke", {
   principal: new ServicePrincipal("iot.amazonaws.com"),
   sourceArn: `arn:aws:iot:${iotStack.region}:${iotStack.account}:rule/SendSensorValueRule*`,
+});
+
+// // custom rule
+// const ruleCreateTracker = new CfnTopicRule(iotStack, "CreateTrackerRule", {
+//   topicRulePayload: {
+//     sql: "select * as data, topic(4) as sensorId from 'dt/bay-health/SF/+/sensor-value'",
+//     actions: [
+//       {
+//         lambda: {
+//           functionArn: createTrackerLambda.functionArn,
+//         }
+//       }
+//     ],
+//   },
+// });
+
+createTrackerLambda.addPermission("AllowIoTInvoke", {
+  principal: new ServicePrincipal("iot.amazonaws.com"),
+  sourceArn: `arn:aws:iot:${iotStack.region}:${iotStack.account}:rule/CreateTrackerRule*`,
 });

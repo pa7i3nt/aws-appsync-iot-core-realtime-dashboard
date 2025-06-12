@@ -50,9 +50,11 @@ async function createSensors(profile, region){
 
         //set the iot core endpoint
         sensor.settings.host = host;
+        
+        const randomPolicyValue = Math.random().toString(36).slice(2, 7);
     
         //create the IOT policy
-        var policyName = 'Policy-' + sensor.settings.clientId;
+        var policyName = 'Policy-' + randomPolicyValue + '-' + sensor.settings.clientId;
         var policy = { policyName: policyName, policyDocument: JSON.stringify(policyDocument)};
         command = new CreatePolicyCommand(policy)
         result = await iotClient.send(command)
