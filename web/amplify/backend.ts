@@ -2,6 +2,7 @@ import { defineBackend } from "@aws-amplify/backend";
 import { Policy, PolicyStatement, ServicePrincipal } from "aws-cdk-lib/aws-iam";
 import { CfnMap } from "aws-cdk-lib/aws-location";
 import { CfnTopicRule } from "aws-cdk-lib/aws-iot";
+import { CfnUserPool } from "aws-cdk-lib/aws-cognito";
 import { auth } from "./auth/resource";
 import { data } from "./data/resource";
 import { listSensors } from "./functions/list-sensors/resource";
@@ -21,7 +22,11 @@ const { cfnIdentityPool } = backend.auth.resources.cfnResources;
 cfnIdentityPool.allowUnauthenticatedIdentities = false;
 
 // Add the Lambda trigger to Cognito for email verification
-backend.auth.resources.userPool.addTrigger('PreSignUp', backend.customEmailTrigger.resources.lambda);
+const cfnUserPool = backend.auth.resources.userPool.node.defaultChild as CfnUserPool;
+cfnUserPool.lambdaConfig = {
+  ...cfnUserPool.lambdaConfig,
+  preSignUp: backend.customEmailTrigger.resources.lambda.functionArn
+};
 
 // Mapping Resources
 const geoStack = backend.createStack("geo-stack");
