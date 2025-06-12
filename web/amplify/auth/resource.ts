@@ -8,6 +8,4 @@ export const auth = defineAuth({
   loginWith: {
     email: true,
   },
-  // Configure verification to use links instead of codes
-  verificationEmailStyle: 'LINK',
 });

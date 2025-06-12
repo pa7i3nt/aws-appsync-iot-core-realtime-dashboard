@@ -6,17 +6,22 @@ import { auth } from "./auth/resource";
 import { data } from "./data/resource";
 import { listSensors } from "./functions/list-sensors/resource";
 import { sendSensorValue } from "./functions/send-sensor-value/resource";
+import { customEmailTrigger } from "./functions/custom-email-trigger/resource";
 
 const backend = defineBackend({
   auth,
   data,
   listSensors,
   sendSensorValue,
+  customEmailTrigger,
 });
 
 // disable unauthenticated access
 const { cfnIdentityPool } = backend.auth.resources.cfnResources;
 cfnIdentityPool.allowUnauthenticatedIdentities = false;
+
+// Add the Lambda trigger to Cognito for email verification
+backend.auth.resources.userPool.addTrigger('PreSignUp', backend.customEmailTrigger.resources.lambda);
 
 // Mapping Resources
 const geoStack = backend.createStack("geo-stack");
