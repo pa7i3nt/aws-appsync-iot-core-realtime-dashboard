@@ -1,4 +1,5 @@
 import { defineAuth } from '@aws-amplify/backend'
+import { customEmailSender } from '../functions/custom-email-sender/resource'
 
 /**
  * Define and configure your auth resource
@@ -6,10 +7,10 @@ import { defineAuth } from '@aws-amplify/backend'
  */
 export const auth = defineAuth({
   loginWith: {
-    email: {
-      // Enable email verification during sign-up
-      verificationEmailSubject: 'Verify your email for our IoT Dashboard',
-      verificationEmailBody: (createCode: () => string) => `Thanks for signing up! Please verify your email by clicking this link: ${createCode()}`,
-    },
+    email: true,
+  },
+  // Configure custom email sender for verification emails
+  customEmailSender: {
+    lambda: customEmailSender,
   },
 });
