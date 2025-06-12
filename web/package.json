@@ -17,7 +17,6 @@
     "aws-amplify": "^6.14.1",
     "maplibre-gl": "^2.1.2",
     "maplibre-gl-js-amplify": "^4.0.2",
-    "minimatch": "^10.0.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },
