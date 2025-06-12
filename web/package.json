@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@aws-amplify/ui-react": "^6.10.0",
+    "@aws-cdk/toolkit-lib": "^1.1.1",
     "@aws-sdk/client-iot": "^3.782.0",
     "@aws-sdk/protocol-http": "^3.374.0",
     "@aws-sdk/signature-v4": "^3.374.0",
