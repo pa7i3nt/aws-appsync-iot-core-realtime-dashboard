@@ -28,6 +28,19 @@ cfnUserPool.lambdaConfig = {
   preSignUp: backend.customEmailTrigger.resources.lambda.functionArn
 };
 
+// Add a domain to the user pool for verification links
+userPool.addDomain('CognitoDomain', {
+  cognitoDomain: {
+    domainPrefix: `iot-dashboard-${Math.random().toString(36).substring(2, 7)}`
+  }
+});
+
+// Grant Cognito permission to invoke the Lambda function
+backend.customEmailTrigger.resources.lambda.addPermission('AllowCognitoInvoke', {
+  principal: new ServicePrincipal('cognito-idp.amazonaws.com'),
+  sourceArn: userPool.userPoolArn
+});
+
 // Mapping Resources
 const geoStack = backend.createStack("geo-stack");
 

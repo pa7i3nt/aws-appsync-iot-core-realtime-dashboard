@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Auth } from 'aws-amplify';
+import { Amplify } from 'aws-amplify';
+import { signIn, confirmSignUp } from 'aws-amplify/auth';
 import { useNavigate } from 'react-router-dom';
 
 function VerifyEmail() {
@@ -20,7 +21,7 @@ function VerifyEmail() {
         }
         
         // Confirm signup with Cognito
-        await Auth.confirmSignUp(username, code);
+        await confirmSignUp({ username, confirmationCode: code });
         setVerifying(false);
         
         // Redirect to main page after successful verification
