@@ -17,13 +17,14 @@
     "aws-amplify": "^6.14.1",
     "maplibre-gl": "^2.1.2",
     "maplibre-gl-js-amplify": "^4.0.2",
+    "minimatch": "^10.0.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },
   "devDependencies": {
     "@aws-amplify/backend": "^1.15.0",
     "@aws-amplify/backend-cli": "^1.5.0",
-    "@types/node": "^24.0.0",
+    "@types/node": "^24.0.1",
     "@types/react": "^18.2.48",
     "@types/react-dom": "^18.2.18",
     "@vitejs/plugin-react": "^4.3.4",
