@@ -41,12 +41,6 @@
     "vite": "^5.0.13"
   },
   "overrides": {
-    "glob": {
-      "minimatch": "10.0.1"
-    },
-    "@aws-cdk/toolkit-lib": {
-      "minimatch": "10.0.1"
-    },
     "minimatch":"10.0.1"
   }
 }
