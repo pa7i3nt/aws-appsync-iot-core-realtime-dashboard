@@ -22,9 +22,9 @@ const { cfnIdentityPool } = backend.auth.resources.cfnResources;
 cfnIdentityPool.allowUnauthenticatedIdentities = false;
 
 // Add the Lambda trigger to Cognito for email verification
-const cfnUserPool = backend.auth.resources.userPool.node.defaultChild as CfnUserPool;
+const userPool = backend.auth.resources.userPool;
+const cfnUserPool = userPool.node.defaultChild as CfnUserPool;
 cfnUserPool.lambdaConfig = {
-  ...cfnUserPool.lambdaConfig,
   preSignUp: backend.customEmailTrigger.resources.lambda.functionArn
 };
 
@@ -33,7 +33,7 @@ const geoStack = backend.createStack("geo-stack");
 
 // create a map
 const map = new CfnMap(geoStack, "Map", {
-  mapName: "SensorMap7",
+  mapName: "SensorMap8",
   description: "Sensor Map",
   configuration: {
     style: "VectorEsriDarkGrayCanvas",
@@ -42,7 +42,7 @@ const map = new CfnMap(geoStack, "Map", {
   tags: [
     {
       key: "name",
-      value: "SensorMap7",
+      value: "SensorMap8",
     },
   ],
 });
