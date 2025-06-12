@@ -9,7 +9,7 @@ export const auth = defineAuth({
     email: {
       // Enable email verification during sign-up
       verificationEmailSubject: 'Verify your email for our IoT Dashboard',
-      verificationEmailBody: 'Thanks for signing up! Please verify your email by clicking this link: {##Verify Email##}',
+      verificationEmailBody: (createCode: () => string) => `Thanks for signing up! Please verify your email by clicking this link: ${createCode()}`,
     },
   },
 });
