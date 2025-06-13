@@ -25,7 +25,8 @@ function VerifyEmail() {
         
         setSuccess(true);
         setVerifying(false);
-        
+        //Create geofence location for userid
+        // Send to Amplify backend /create-geofence-location :  -> (userid) -> geofence location according userid
         // Redirect to main page after successful verification
         setTimeout(() => navigate('/'), 3000);
         
