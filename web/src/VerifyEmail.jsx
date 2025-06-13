@@ -1,11 +1,10 @@
 import { useState, useEffect } from 'react';
-import { Amplify } from 'aws-amplify';
-import { signIn, confirmSignUp } from 'aws-amplify/auth';
 import { useNavigate } from 'react-router-dom';
 
 function VerifyEmail() {
   const [verifying, setVerifying] = useState(true);
   const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(false);
   const navigate = useNavigate();
   
   useEffect(() => {
@@ -13,19 +12,18 @@ function VerifyEmail() {
       try {
         // Get parameters from URL
         const urlParams = new URLSearchParams(window.location.search);
-        const code = urlParams.get('code');
-        const username = urlParams.get('username');
+        const encodedLink = urlParams.get('link');
         
-        if (!code || !username) {
-          throw new Error('Missing verification parameters');
+        if (!encodedLink) {
+          throw new Error('Missing verification link parameter');
         }
         
-        // Confirm signup with Cognito
-        await confirmSignUp({ username, confirmationCode: code });
-        setVerifying(false);
+        // Decode the link parameter
+        const verificationLink = decodeURIComponent(encodedLink);
         
-        // Redirect to main page after successful verification
-        setTimeout(() => navigate('/'), 3000);
+        // Redirect to the Cognito verification link
+        window.location.href = verificationLink;
+        
       } catch (err) {
         console.error('Verification error:', err);
         setError(err.message || 'An error occurred during verification');
@@ -37,18 +35,22 @@ function VerifyEmail() {
   }, [navigate]);
   
   return (
-    <div style={{ textAlign: 'center', marginTop: '50px' }}>
+    <div style={{ textAlign: 'center', marginTop: '50px', maxWidth: '400px', margin: '0 auto' }}>
+      <h2>Email Verification</h2>
+      
       {verifying ? (
-        <p>Verifying your email...</p>
+        <div>
+          <p>Processing your verification...</p>
+        </div>
       ) : error ? (
         <div>
-          <h2>Verification Failed</h2>
+          <h3>Verification Failed</h3>
           <p>{error}</p>
           <p>Please try signing up again.</p>
         </div>
       ) : (
         <div>
-          <h2>Email Verified Successfully!</h2>
+          <h3>Email Verified Successfully!</h3>
           <p>Redirecting to the dashboard...</p>
         </div>
       )}

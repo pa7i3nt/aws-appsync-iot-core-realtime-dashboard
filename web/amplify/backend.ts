@@ -25,13 +25,13 @@ cfnIdentityPool.allowUnauthenticatedIdentities = false;
 const userPool = backend.auth.resources.userPool;
 const cfnUserPool = userPool.node.defaultChild as CfnUserPool;
 cfnUserPool.lambdaConfig = {
-  preSignUp: backend.customEmailTrigger.resources.lambda.functionArn
+  customMessage: backend.customEmailTrigger.resources.lambda.functionArn
 };
 
 // Add a domain to the user pool for verification links
 userPool.addDomain('CognitoDomain', {
   cognitoDomain: {
-    domainPrefix: `iot-dashboard-${Math.random().toString(36).substring(2, 7)}`
+    domainPrefix: 'iot-dashboard-ywt1h'
   }
 });
 

@@ -1,13 +1,39 @@
-import { PreSignUpTriggerEvent } from 'aws-lambda';
+import { CustomMessageTriggerHandler } from 'aws-lambda';
 
-export const handler = async (event: PreSignUpTriggerEvent) => {
-  console.log('Pre sign-up trigger:', JSON.stringify(event, null, 2));
+type CustomMessageEvent = Parameters<CustomMessageTriggerHandler>[0];
+
+export const handler = async (event: CustomMessageEvent) => {
+  console.log('Custom message trigger:', JSON.stringify(event, null, 2));
   
-  // Auto-confirm users to enable link-based verification
-  event.response.autoConfirmUser = true;
-  
-  // Don't auto-verify email, let the user click the link
-  event.response.autoVerifyEmail = false;
+  if (event.triggerSource === 'CustomMessage_SignUp' || event.triggerSource === 'CustomMessage_ResendCode') {
+    // For link-based verification
+    const { linkParameter, userAttributes } = event.request;
+    const { userName } = event;
+    
+    // Get the app URL - replace with your actual deployed URL
+    const appUrl = 'http://localhost:5173';
+    
+    // Create a verification link that points to your app's verify page
+    // The linkParameter contains the Cognito-generated verification link
+    const verificationLink = `${appUrl}/verify?username=${userName}&link=${encodeURIComponent(linkParameter)}`;
+    
+    // Customize the email message
+    event.response.emailMessage = `
+      <html>
+        <body>
+          <h2>Welcome to IoT Dashboard!</h2>
+          <p>Please click the link below to verify your email address:</p>
+          <p>
+            <a href="${verificationLink}">Verify Email</a>
+          </p>
+          <p>If the link doesn't work, copy and paste this URL into your browser:</p>
+          <p>${verificationLink}</p>
+        </body>
+      </html>
+    `;
+    
+    event.response.emailSubject = 'Verify your email for IoT Dashboard';
+  }
   
   return event;
 };

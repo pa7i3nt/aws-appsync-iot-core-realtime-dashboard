@@ -10,15 +10,25 @@ import awsExports from "../amplify_outputs.json";
 
 Amplify.configure(awsExports);
 
+// Create a wrapper component that applies authentication only to protected routes
+const ProtectedRoute = ({ children }) => {
+  const AuthenticatedComponent = withAuthenticator(() => children);
+  return <AuthenticatedComponent />;
+};
+
 const App = () => {
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/verify" element={<VerifyEmail />} />
-        <Route path="/" element={<MapPage />} />
+        <Route path="/" element={
+          <ProtectedRoute>
+            <MapPage />
+          </ProtectedRoute>
+        } />
       </Routes>
     </BrowserRouter>
   );
 };
 
-export default withAuthenticator(App);
+export default App;
