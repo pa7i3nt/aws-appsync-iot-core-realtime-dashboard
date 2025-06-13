@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { confirmSignUp } from 'aws-amplify/auth';
 
 function VerifyEmail() {
   const [verifying, setVerifying] = useState(true);
@@ -12,17 +13,21 @@ function VerifyEmail() {
       try {
         // Get parameters from URL
         const urlParams = new URLSearchParams(window.location.search);
-        const encodedLink = urlParams.get('link');
+        const code = urlParams.get('code');
+        const username = urlParams.get('username');
         
-        if (!encodedLink) {
-          throw new Error('Missing verification link parameter');
+        if (!code || !username) {
+          throw new Error('Missing verification parameters');
         }
         
-        // Decode the link parameter
-        const verificationLink = decodeURIComponent(encodedLink);
+        // Directly confirm the signup with the code
+        await confirmSignUp({ username, confirmationCode: code });
         
-        // Redirect to the Cognito verification link
-        window.location.href = verificationLink;
+        setSuccess(true);
+        setVerifying(false);
+        
+        // Redirect to main page after successful verification
+        setTimeout(() => navigate('/'), 3000);
         
       } catch (err) {
         console.error('Verification error:', err);

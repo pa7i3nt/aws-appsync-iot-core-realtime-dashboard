@@ -1,7 +1,8 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { createMap } from "maplibre-gl-js-amplify";
 import { Marker } from "maplibre-gl";
 import { generateClient } from "aws-amplify/api";
+import { fetchUserAttributes, resendSignUpCode } from "aws-amplify/auth";
 import { listSensors } from "./graphql/queries";
 import { onCreateSensorValue } from "./graphql/subscriptions";
 
@@ -9,6 +10,40 @@ import "maplibre-gl/dist/maplibre-gl.css";
 import "./MapPage.css";
 
 const MapPage = () => {
+  const [showVerificationAlert, setShowVerificationAlert] = useState(false);
+  const [userEmail, setUserEmail] = useState("");
+  const [resendStatus, setResendStatus] = useState({ loading: false, success: false, error: null });
+  
+  // Check if user is verified
+  useEffect(() => {
+    const checkUserVerification = async () => {
+      try {
+        const userAttributes = await fetchUserAttributes();
+        const isVerified = userAttributes.email_verified === "true";
+        setUserEmail(userAttributes.email || "");
+        
+        if (!isVerified) {
+          setShowVerificationAlert(true);
+        }
+      } catch (error) {
+        console.error("Error checking user verification:", error);
+      }
+    };
+    
+    checkUserVerification();
+  }, []);
+  
+  // Handle resend verification code
+  const handleResendVerification = async () => {
+    try {
+      setResendStatus({ loading: true, success: false, error: null });
+      await resendSignUpCode({ username: userEmail });
+      setResendStatus({ loading: false, success: true, error: null });
+    } catch (error) {
+      console.error("Error resending verification code:", error);
+      setResendStatus({ loading: false, success: false, error: error.message });
+    }
+  };
   useEffect(() => {
     var map;
 
@@ -107,6 +142,40 @@ const MapPage = () => {
     <div id="container">
       <div id="banner">Bay Health</div>
       <div id="map" className="fullscreen-map" />
+      
+      {showVerificationAlert && (
+        <div className="verification-alert">
+          <div className="verification-alert-content">
+            <h3>Email Verification Required</h3>
+            <p>Please verify your email address ({userEmail}) to access all features.</p>
+            
+            {resendStatus.success ? (
+              <div className="success-message">
+                Verification email sent! Please check your inbox.
+              </div>
+            ) : (
+              <button 
+                onClick={handleResendVerification}
+                disabled={resendStatus.loading}
+                className="resend-button"
+              >
+                {resendStatus.loading ? "Sending..." : "Resend Verification Email"}
+              </button>
+            )}
+            
+            {resendStatus.error && (
+              <div className="error-message">{resendStatus.error}</div>
+            )}
+            
+            <button 
+              onClick={() => setShowVerificationAlert(false)}
+              className="close-button"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

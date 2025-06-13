@@ -35,3 +35,71 @@ body { margin: 0; padding: 0; }
     height: 100%;
     z-index: 100;
 }
+
+.verification-alert {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.verification-alert-content {
+    background-color: white;
+    padding: 20px;
+    border-radius: 5px;
+    max-width: 400px;
+    text-align: center;
+}
+
+.verification-alert-content h3 {
+    margin-top: 0;
+    color: #333;
+}
+
+.verification-alert-content .close-button {
+    background-color: #0070f3;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 15px;
+}
+
+.verification-alert-content .resend-button {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 15px;
+    margin-right: 10px;
+}
+
+.verification-alert-content .resend-button:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
+
+.verification-alert-content .success-message {
+    color: #28a745;
+    margin: 15px 0;
+    padding: 10px;
+    background-color: #d4edda;
+    border-radius: 4px;
+}
+
+.verification-alert-content .error-message {
+    color: #dc3545;
+    margin: 15px 0;
+    padding: 10px;
+    background-color: #f8d7da;
+    border-radius: 4px;
+}
