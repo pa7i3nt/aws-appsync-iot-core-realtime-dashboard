@@ -65,16 +65,10 @@ const CustomAuthenticator = ({ children }) => {
         },
       });
       
-      // Auto sign in after sign up
-      try {
-        await autoSignIn();
-        const currentUser = await getCurrentUser();
-        setUser(currentUser);
-      } catch (autoSignInError) {
-        // If auto sign-in fails, go back to sign in
-        setAuthState("signIn");
-        setError("Account created! Please sign in.");
-      }
+      // Show success message with verification instructions
+      setError("");
+      setAuthState("signIn");
+      alert("Account created! Please check your email for a verification link before signing in.");
     } catch (err) {
       setError(err.message || "Error signing up");
     }
