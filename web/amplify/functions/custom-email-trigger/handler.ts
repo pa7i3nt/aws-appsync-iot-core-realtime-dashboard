@@ -6,28 +6,20 @@ export const handler = async (event: CustomMessageEvent) => {
   console.log('Custom message trigger:', JSON.stringify(event, null, 2));
   
   if (event.triggerSource === 'CustomMessage_SignUp' || event.triggerSource === 'CustomMessage_ResendCode') {
-    // For link-based verification
-    const { linkParameter, userAttributes } = event.request;
-    const { userName } = event;
+    // For link-based verification - use the Cognito-provided link directly
+    const { linkParameter } = event.request;
     
-    // Get the app URL - replace with your actual deployed URL
-    const appUrl = 'http://localhost:5173';
-    
-    // Create a verification link that points to your app's verify page
-    // The linkParameter contains the Cognito-generated verification link
-    const verificationLink = `${appUrl}/verify?username=${userName}&link=${encodeURIComponent(linkParameter)}`;
-    
-    // Customize the email message
+    // Customize the email message with the Cognito-provided verification link
     event.response.emailMessage = `
       <html>
         <body>
           <h2>Welcome to IoT Dashboard!</h2>
           <p>Please click the link below to verify your email address:</p>
           <p>
-            <a href="${verificationLink}">Verify Email</a>
+            <a href="${linkParameter}">Verify Email</a>
           </p>
           <p>If the link doesn't work, copy and paste this URL into your browser:</p>
-          <p>${verificationLink}</p>
+          <p>${linkParameter}</p>
         </body>
       </html>
     `;
