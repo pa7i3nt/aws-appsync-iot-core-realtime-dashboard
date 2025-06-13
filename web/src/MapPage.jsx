@@ -12,7 +12,7 @@ import "./MapPage.css";
 const MapPage = () => {
   const [userEmail, setUserEmail] = useState("");
   const [resendStatus, setResendStatus] = useState({ loading: false, success: false, error: null });
-  const [authError, setAuthError] = useState(true); // Set to true by default to show the verification message
+  const [authError, setAuthError] = useState(false); // Set to false by default to hide the verification message
   
   // Get user email for the verification message
   useEffect(() => {
@@ -53,7 +53,8 @@ const MapPage = () => {
         if (event.reason.message.includes('User needs to be authenticated') || 
             event.reason.message.includes('not authenticated') ||
             (event.reason.code === 'NotAuthorizedException')) {
-          setAuthError(true);
+          // Don't show the popup automatically
+          // setAuthError(true);
           event.preventDefault(); // Prevent default error handling
         }
       }
@@ -61,13 +62,14 @@ const MapPage = () => {
     
     window.addEventListener('unhandledrejection', handleUnhandledRejection);
     
-    // Also check user verification status directly
+    // Check user verification status but don't show popup
     const checkVerification = async () => {
       try {
         const userAttributes = await fetchUserAttributes();
-        if (userAttributes.email_verified === "false") {
-          setAuthError(true);
-        }
+        // Don't show the popup even if not verified
+        // if (userAttributes.email_verified === "false") {
+        //   setAuthError(true);
+        // }
       } catch (error) {
         console.error("Error checking verification:", error);
       }

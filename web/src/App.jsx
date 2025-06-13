@@ -3,7 +3,7 @@ import { Authenticator } from "@aws-amplify/ui-react";
 import { Amplify } from "aws-amplify";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { getCurrentUser, signIn, signUp, autoSignIn, signOut } from "aws-amplify/auth";
+import { getCurrentUser, signIn, signUp, autoSignIn, signOut, resendSignUpCode } from "aws-amplify/auth";
 
 import MapPage from "./MapPage";
 import VerifyEmail from "./VerifyEmail";
@@ -20,6 +20,9 @@ const CustomAuthenticator = ({ children }) => {
   const [authState, setAuthState] = useState("signIn");
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
+  const [showVerificationPopup, setShowVerificationPopup] = useState(false);
+  const [verificationEmail, setVerificationEmail] = useState("");
+  const [resendStatus, setResendStatus] = useState({ loading: false, success: false, error: null });
   
   // Check if user is already signed in
   useEffect(() => {
@@ -37,6 +40,17 @@ const CustomAuthenticator = ({ children }) => {
     checkUser();
   }, []);
   
+  const handleResendVerification = async () => {
+    try {
+      setResendStatus({ loading: true, success: false, error: null });
+      await resendSignUpCode({ username: verificationEmail });
+      setResendStatus({ loading: false, success: true, error: null });
+    } catch (error) {
+      console.error("Error resending verification code:", error);
+      setResendStatus({ loading: false, success: false, error: error.message });
+    }
+  };
+  
   const handleSignIn = async (e) => {
     e.preventDefault();
     setError("");
@@ -47,7 +61,17 @@ const CustomAuthenticator = ({ children }) => {
       const currentUser = await getCurrentUser();
       setUser(currentUser);
     } catch (err) {
-      setError(err.message || "Error signing in");
+      console.log("Sign in error:", err);
+      
+      // Check specifically for UserNotConfirmedException
+      if (err.name === "UserNotConfirmedException" || 
+          (err.message && err.message.includes("not confirmed"))) {
+        // Show verification popup instead of error message
+        setVerificationEmail(formData.email);
+        setShowVerificationPopup(true);
+      } else {
+        setError(err.message || "Error signing in");
+      }
     }
   };
   
@@ -192,6 +216,96 @@ const CustomAuthenticator = ({ children }) => {
           )}
         </div>
       </div>
+      
+      {/* Verification Popup */}
+      {showVerificationPopup && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 1000
+        }}>
+          <div style={{
+            backgroundColor: 'white',
+            padding: '20px',
+            borderRadius: '5px',
+            maxWidth: '400px',
+            textAlign: 'center',
+            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
+          }}>
+            <h3 style={{ fontSize: '24px', marginBottom: '15px', color: '#333' }}>Email Verification Required</h3>
+            <p style={{ fontSize: '16px', marginBottom: '10px', fontWeight: 'bold' }}>User needs to be authenticated to call this API.</p>
+            <p style={{ fontSize: '16px', marginBottom: '20px' }}>
+              Your account requires email verification. Please check your email 
+              <span style={{ fontWeight: 'bold' }}> ({verificationEmail})</span> and click the verification link we sent you.
+            </p>
+            
+            <button 
+              onClick={handleResendVerification}
+              disabled={resendStatus.loading}
+              style={{
+                backgroundColor: '#28a745',
+                color: 'white',
+                border: 'none',
+                padding: '10px 20px',
+                borderRadius: '4px',
+                cursor: resendStatus.loading ? 'not-allowed' : 'pointer',
+                marginRight: '10px',
+                fontSize: '16px'
+              }}
+            >
+              {resendStatus.loading ? "Sending..." : "Resend Verification Email"}
+            </button>
+            
+            <button 
+              onClick={() => setShowVerificationPopup(false)}
+              style={{
+                backgroundColor: '#6c757d',
+                color: 'white',
+                border: 'none',
+                padding: '10px 20px',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '16px'
+              }}
+            >
+              Close
+            </button>
+            
+            {resendStatus.success && (
+              <div style={{
+                color: '#28a745',
+                margin: '15px 0',
+                padding: '10px',
+                backgroundColor: '#d4edda',
+                borderRadius: '4px',
+                fontSize: '16px'
+              }}>
+                Verification email sent! Please check your inbox.
+              </div>
+            )}
+            
+            {resendStatus.error && (
+              <div style={{
+                color: '#dc3545',
+                margin: '15px 0',
+                padding: '10px',
+                backgroundColor: '#f8d7da',
+                borderRadius: '4px',
+                fontSize: '16px'
+              }}>
+                {resendStatus.error}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

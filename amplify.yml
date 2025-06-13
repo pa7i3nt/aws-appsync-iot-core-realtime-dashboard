@@ -1,0 +1,24 @@
+version: 1
+backend:
+  phases:
+    build:
+      commands:
+        - amplifyPush --simple
+    postBuild:
+      commands:
+        - aws cognito-idp update-user-pool-client --user-pool-id ap-southeast-1_lO6Dcljuf --client-id 1i5fil53phfd29d5m18fo5jdjv --callback-urls http://localhost:5173/verify --logout-urls http://localhost:5173 --allowed-o-auth-flows code --allowed-o-auth-scopes email openid profile --allowed-o-auth-flows-user-pool-client
+frontend:
+  phases:
+    preBuild:
+      commands:
+        - npm ci
+    build:
+      commands:
+        - npm run build
+  artifacts:
+    baseDirectory: dist
+    files:
+      - '**/*'
+  cache:
+    paths:
+      - node_modules/**/*
