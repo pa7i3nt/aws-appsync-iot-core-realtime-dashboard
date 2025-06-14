@@ -8,6 +8,15 @@ import { data } from "./data/resource";
 import { listSensors } from "./functions/list-sensors/resource";
 import { sendSensorValue } from "./functions/send-sensor-value/resource";
 import { customEmailTrigger } from "./functions/custom-email-trigger/resource";
+import { defineFunction } from "@aws-amplify/backend";
+
+// Define the post-confirmation trigger directly in the backend file
+// Assign it to the auth stack to avoid circular dependencies
+const postConfirmationTrigger = defineFunction({
+  name: "postConfirmationTrigger",
+  entry: "./functions/post-confirmation/index.js",
+  resourceGroupName: "auth"
+});
 
 const backend = defineBackend({
   auth,
@@ -15,18 +24,20 @@ const backend = defineBackend({
   listSensors,
   sendSensorValue,
   customEmailTrigger,
+  postConfirmationTrigger,
 });
 
 // disable unauthenticated access
 const { cfnIdentityPool } = backend.auth.resources.cfnResources;
 cfnIdentityPool.allowUnauthenticatedIdentities = false;
 
-// Add the Lambda trigger to Cognito for email verification
+// Add the Lambda triggers to Cognito for email verification and post confirmation
 const userPool = backend.auth.resources.userPool;
 const cfnUserPool = userPool.node.defaultChild as CfnUserPool;
 cfnUserPool.lambdaConfig = {
-  customMessage: backend.customEmailTrigger.resources.lambda.functionArn
-};
+  customMessage: backend.customEmailTrigger.resources.lambda.functionArn,
+  postConfirmation: backend.postConfirmationTrigger.resources.lambda.functionArn
+}
 
 // Add a domain to the user pool for verification links
 userPool.addDomain('CognitoDomain', {
@@ -35,11 +46,28 @@ userPool.addDomain('CognitoDomain', {
   }
 });
 
-// Grant Cognito permission to invoke the Lambda function
+// Grant Cognito permission to invoke the Lambda functions
 backend.customEmailTrigger.resources.lambda.addPermission('AllowCognitoInvoke', {
   principal: new ServicePrincipal('cognito-idp.amazonaws.com'),
   sourceArn: userPool.userPoolArn
 });
+
+// Add permissions for the post-confirmation trigger
+backend.postConfirmationTrigger.resources.lambda.addPermission('AllowCognitoInvoke', {
+  principal: new ServicePrincipal('cognito-idp.amazonaws.com'),
+  sourceArn: userPool.userPoolArn
+});
+
+// Add permissions for the post-confirmation trigger to create geofence collections
+backend.postConfirmationTrigger.resources.lambda.addToRolePolicy(
+  new PolicyStatement({
+    actions: [
+      "geo:CreateGeofenceCollection",
+      "geo:DescribeGeofenceCollection"
+    ],
+    resources: ["*"]
+  })
+);
 
 // Mapping Resources
 const geoStack = backend.createStack("geo-stack");
