@@ -14,7 +14,7 @@ import { defineFunction } from "@aws-amplify/backend";
 // Assign it to the auth stack to avoid circular dependencies
 const postConfirmationTrigger = defineFunction({
   name: "postConfirmationTrigger",
-  entry: "./functions/post-confirmation/index.mjs",
+  entry: "./functions/post-confirmation/index.ts",
   resourceGroupName: "auth"
 });
 

@@ -1,8 +1,6 @@
 import { defineFunction } from "@aws-amplify/backend";
 
-const postConfirmationTrigger = defineFunction({
+export const postConfirmationTrigger = defineFunction({
   name: "postConfirmationTrigger",
-  entry: "./index.js",
+  entry: "./index.ts",
 });
-
-export { postConfirmationTrigger };
