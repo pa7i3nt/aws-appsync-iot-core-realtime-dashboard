@@ -21,6 +21,7 @@ const schema = a
       disolvedO2: a.float().required(),
       status: a.integer().required(),
       geo: a.ref('Geo').required(),
+      userId: a.string().required(),
       timestamp: a.timestamp().required()
     }),
 
