@@ -1,0 +1,20 @@
+[
+  {
+    "thingTypeName": "WATER_QUALITY_SENSOR",
+    "device": {
+      "deviceType": "device-sf-east"
+    },
+    "position": {
+      "latitude": 37.692625,
+      "longitude": -122.200682
+    },
+    "settings": {
+      "host": "a24lhwjvpuqsrx-ats.iot.ap-southeast-1.amazonaws.com",
+      "keyPath": "./certs/device-sf-east-private.pem.key",
+      "certPath": "./certs/device-sf-east-certificate.pem.crt",
+      "caPath": "./certs/AmazonRootCA1.pem",
+      "certificateArn": "arn:aws:iot:ap-southeast-1:727618351614:cert/175a67df4a80a011e1ae1944c8c63734bcf6299f82356f48eb5a0645d8bc6137",
+      "clientId": "device-sf-east"
+    }
+  }
+]

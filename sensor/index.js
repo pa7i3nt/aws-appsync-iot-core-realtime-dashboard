@@ -32,6 +32,10 @@ async function run(sensor) {
         temperature: 0,
         salinity: 0,
         disolvedO2: 0,
+        geo: {
+            latitude: 0,
+            longitude: 0
+        },
         timestamp: new Date().getTime()
     }
 
@@ -51,25 +55,46 @@ async function run(sensor) {
     
         console.log('published to shadow topic ' + topic + ' ' + JSON.stringify(shadowDocument));
     
-        //publish new value readings based on value_rate
-        setInterval(function(){
+        // //publish new value readings based on value_rate
+        // setInterval(function(){
 
-            //calculate randome values for each sensor reading
-            msg.pH = RandomValue(50, 100) / 10;
-            msg.temperature = RandomValue(480, 570) / 10;
-            msg.salinity = RandomValue(200, 350) / 10;
-            msg.disolvedO2 = RandomValue(40, 120) / 10;
+        //     //calculate randome values for each sensor reading
+        //     msg.pH = RandomValue(50, 100) / 10;
+        //     msg.temperature = RandomValue(480, 570) / 10;
+        //     msg.salinity = RandomValue(200, 350) / 10;
+        //     msg.disolvedO2 = RandomValue(40, 120) / 10;
+            
+        //     msg.geo.latitude = sensor.geo.latitude
+        //     msg.geo.longitude = sensor.geo.longitude
 
-            msg.timestamp = new Date().getTime();
+        //     msg.timestamp = new Date().getTime();
 
-            //publish the sensor reading message
-            var topic = VALUE_TOPIC.replace('[thingName]', sensor.settings.clientId);
+        //     //publish the sensor reading message
+        //     var topic = VALUE_TOPIC.replace('[thingName]', sensor.settings.clientId);
 
-            device.publish(topic, JSON.stringify(msg)); 
+        //     device.publish(topic, JSON.stringify(msg)); 
 
-            console.log('published to telemetry topic ' + topic + ' ' + JSON.stringify(msg));
+        //     console.log('published to telemetry topic ' + topic + ' ' + JSON.stringify(msg));
 
-        }, sensor.frequency);
+        // }, sensor.frequency);
+        
+        //calculate randome values for each sensor reading
+        msg.pH = RandomValue(50, 100) / 10;
+        msg.temperature = RandomValue(480, 570) / 10;
+        msg.salinity = RandomValue(200, 350) / 10;
+        msg.disolvedO2 = RandomValue(40, 120) / 10;
+        
+        msg.geo.latitude = sensor.geo.latitude
+        msg.geo.longitude = sensor.geo.longitude
+
+        msg.timestamp = new Date().getTime();
+
+        //publish the sensor reading message
+        var topic = VALUE_TOPIC.replace('[thingName]', sensor.settings.clientId);
+
+        device.publish(topic, JSON.stringify(msg)); 
+
+        console.log('published to telemetry topic ' + topic + ' ' + JSON.stringify(msg));
     });
 
     device.on('error', function(error) {

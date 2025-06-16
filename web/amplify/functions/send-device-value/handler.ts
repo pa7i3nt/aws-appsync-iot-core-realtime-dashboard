@@ -12,23 +12,13 @@ const { Sha256 } = crypto;
 export const handler: Handler = async (event) => {
   console.log("event", event);
 
-  //set a random sensor status 1-3
-  let status = Math.floor(Math.random() * 3) + 1;
-
   const query = /* GraphQL */ `
-    mutation CreateSensorValue($input: CreateSensorValueInput!) {
-      createSensorValue(input: $input) {
+    mutation CreateDeviceValue($input: CreateDeviceValueInput!) {
+      createDeviceValue(input: $input) {
         id
-        sensorId
-        pH
-        temperature
-        salinity
-        disolvedO2
-        status
-        geo {
-          latitude
-          longitude
-        }
+        deviceId
+        device
+        position
         timestamp
         createdAt
         updatedAt
@@ -38,13 +28,9 @@ export const handler: Handler = async (event) => {
 
   const variables = {
     input: {
-      sensorId: event.sensorId,
-      pH: event.data.pH,
-      temperature: event.data.temperature,
-      salinity: event.data.salinity,
-      disolvedO2: event.data.disolvedO2,
-      status: status,
-      geo: event.data.geo,
+      deviceId: event.deviceId,
+      device: event.data.device,
+      position: event.data.position,
       timestamp: event.data.timestamp,
     },
   };
