@@ -5,13 +5,12 @@ import { sendSensorValue } from '../functions/send-sensor-value/resource'
 
 const schema = a
   .schema({
-    
     /* ***** ORIGINAL ***** */
     Geo: a.customType({
       latitude: a.float(),
       longitude: a.float()
     }),
-    
+
     SensorValue: a.model({
       id: a.id(),
       sensorId: a.string().required(),
@@ -38,7 +37,7 @@ const schema = a
       .query()
       .returns(a.ref('Sensor').array())
       .handler(a.handler.function(listSensors)),
-      
+
     /* ***** OUR SCHEMA ***** */
 
     UserData: a.model({
@@ -47,8 +46,7 @@ const schema = a
       lastName: a.string().required(),
       email: a.string().required(),
       phone: a.string(),
-      geofenceCollectionId: a.string(),
-      // timestamp: a.timestamp().required()
+      geofenceCollectionId: a.string()
     }),
 
     TrackerData: a.model({
@@ -57,26 +55,24 @@ const schema = a
       userId: a.string().required(),
       deviceId: a.string().required(),
       deviceType: a.string(),
-      geo: a.ref('Geo').required(),
-      // timestamp: a.timestamp().required()
+      geo: a.ref('Geo').required()
     }),
-    
+
     UserDeviceMapping: a.model({
       id: a.id(),
       userId: a.string().required(),
-      deviceId: a.string().required(),
-      // timestamp: a.timestamp().required()
+      deviceId: a.string().required()
     }),
-    
+
     Device: a.customType({
-      deviceType: a.string(),
+      deviceType: a.string()
     }),
-    
+
     Position: a.customType({
       latitude: a.float(),
-      longitude: a.float(),
+      longitude: a.float()
     }),
-    
+
     DeviceValue: a.model({
       id: a.id(),
       deviceId: a.string().required(),

@@ -115,6 +115,20 @@ const iotStack = backend.createStack('iot-stack')
 
 const sendSensorValueLambda = backend.sendSensorValue.resources.lambda
 
+sendSensorValueLambda.addToRolePolicy(
+  new PolicyStatement({
+    actions: ['iot:*'],
+    resources: ['arn:aws:iot:*:*:*']
+  })
+)
+// attach the policy to be able to create a tracker
+sendSensorValueLambda.addToRolePolicy(
+  new PolicyStatement({
+    actions: ['*'],
+    resources: ['arn:aws:geo:*:*:*']
+  })
+)
+
 // custom lambda
 const sendDeviceValueLambda = backend.sendDeviceValue.resources.lambda
 
