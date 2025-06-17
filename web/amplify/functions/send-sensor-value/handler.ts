@@ -4,7 +4,12 @@ import { defaultProvider } from '@aws-sdk/credential-provider-node'
 import { SignatureV4 } from '@aws-sdk/signature-v4'
 import { HttpRequest } from '@aws-sdk/protocol-http'
 import { default as fetch, Request } from 'node-fetch'
-import { AssociateTrackerConsumerCommand, CreateTrackerCommand, LocationClient } from '@aws-sdk/client-location'
+import {
+  AssociateTrackerConsumerCommand,
+  CreateTrackerCommand,
+  DescribeTrackerCommand,
+  LocationClient
+} from '@aws-sdk/client-location'
 
 const GRAPHQL_ENDPOINT = process.env.AMPLIFY_DATA_GRAPHQL_ENDPOINT || ''
 const AWS_REGION = process.env.AWS_REGION || ''
@@ -74,27 +79,62 @@ export const handler: Handler = async (event) => {
     body.data.listUserDeviceMappings.items[0].deviceId
 
   // Create tracker based on userId
+  const locationClient = new LocationClient({ region: AWS_REGION })
+  const trackerName = `tracker-${firstDeviceIdMapping}`
+
+  const describeTrackerParams = {
+    TrackerName: trackerName
+  }
   const createTrackerParams = {
-    TrackerName: `tracker-${firstDeviceIdMapping}`,
+    TrackerName: trackerName,
     EventBridgeEnabled: true
   }
   const associateTrackerGeofenceCollectionParams = {
-    TrackerName: `tracker-${firstDeviceIdMapping}`,
+    TrackerName: trackerName,
     ConsumerArn: `arn:aws:geo:ap-southeast-1:727618351614:geofence-collection/user_${firstUserIdMapping}_geofences`
   }
-  const locationClient = new LocationClient({ region: AWS_REGION })
-  try {
-    const createTrackerCommand = new CreateTrackerCommand(createTrackerParams)
-    const responseCreateTracker = await locationClient.send(createTrackerCommand)
-    
-    const associateTrackerGeofenceCollectionCommand = new AssociateTrackerConsumerCommand(associateTrackerGeofenceCollectionParams)
-    const responseAssociateTracker = await locationClient.send(associateTrackerGeofenceCollectionCommand)
 
-    console.log('Tracker created. Tracker name is : ', responseCreateTracker.TrackerName)
-    console.log(`Tracker associated to geofence collection user_${firstUserIdMapping}_geofences`)
-  } catch (error) {
-    console.error('Error creating tracker: ', error)
-    throw error
+  try {
+    const describeTrackerCommand = new DescribeTrackerCommand(
+      describeTrackerParams
+    )
+    await locationClient.send(describeTrackerCommand)
+
+    console.log(`Tracker ${trackerName} already exists.`)
+  } catch (error: any) {
+    if (error.name === 'ResourceNotFoundException') {
+      console.log(`Creating tracker ${trackerName}`)
+
+      try {
+        const createTrackerCommand = new CreateTrackerCommand(
+          createTrackerParams
+        )
+        const responseCreateTracker =
+          await locationClient.send(createTrackerCommand)
+
+        const associateTrackerGeofenceCollectionCommand =
+          new AssociateTrackerConsumerCommand(
+            associateTrackerGeofenceCollectionParams
+          )
+        const responseAssociateTracker = await locationClient.send(
+          associateTrackerGeofenceCollectionCommand
+        )
+
+        console.log(
+          'Tracker created. Tracker name is : ',
+          responseCreateTracker.TrackerName
+        )
+        console.log(
+          `Tracker associated to geofence collection user_${firstUserIdMapping}_geofences`
+        )
+      } catch (createError) {
+        console.error('Failed to create tracker', createError)
+        throw createError
+      }
+    } else {
+      console.error('Error checking tracker: ', error)
+      throw error
+    }
   }
 
   //set a random sensor status 1-3
