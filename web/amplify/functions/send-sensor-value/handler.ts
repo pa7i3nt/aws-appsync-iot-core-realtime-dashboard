@@ -6,6 +6,7 @@ import { HttpRequest } from '@aws-sdk/protocol-http'
 import { default as fetch, Request } from 'node-fetch'
 import {
   AssociateTrackerConsumerCommand,
+  BatchUpdateDevicePositionCommand,
   CreateTrackerCommand,
   DescribeTrackerCommand,
   LocationClient
@@ -139,6 +140,27 @@ export const handler: Handler = async (event) => {
 
   //set a random sensor status 1-3
   let status = Math.floor(Math.random() * 3) + 1
+
+  // Update tracker position
+  try {
+    const batchUpdateDevicePositionParams = {
+      TrackerName: trackerName,
+      Updates: [
+        {
+          DeviceId: firstDeviceIdMapping,
+          Position: [event.data.geo.longitude, event.data.geo.latitude],
+          SampleTime: new Date(Date.now())
+        }
+      ]
+    }
+    const batchUpdateDevicePositionCommand =
+      new BatchUpdateDevicePositionCommand(batchUpdateDevicePositionParams)
+      
+    await locationClient.send(batchUpdateDevicePositionCommand)
+  } catch (error) {
+    console.error('Error updating tracker position: ', error)
+    throw error
+  }
 
   // Create sensor value
   const query = /* GraphQL */ `
