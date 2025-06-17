@@ -196,11 +196,12 @@ sendSensorValueLambda.addPermission('AllowIoTInvoke', {
 // Geofence Monitoring Setup
 const sendNotificationLambda = backend.sendNotification.resources.lambda;
 
-// Add permissions for the geofence monitor to access Location Service
+// Add permissions for the geofence monitor to access Location Service, send email via SES
 sendNotificationLambda.addToRolePolicy(
   new PolicyStatement({
     actions: [
-      "geo:*"
+      "geo:*",
+      "ses:*"
     ],
     resources: ["*"]
   })
