@@ -8,6 +8,9 @@ import { createTracker } from './functions/create-tracker-update-current-positio
 import { listSensors } from './functions/list-sensors/resource'
 import { sendDeviceValue } from './functions/send-device-value/resource'
 import { sendSensorValue } from './functions/send-sensor-value/resource'
+import { sendNotification } from './functions/send-notification/resource'
+import { aws_events as events } from "aws-cdk-lib";
+import { aws_events_targets as targets } from "aws-cdk-lib";
 
 const VERSION_NUMBER = 9
 
@@ -17,7 +20,8 @@ const backend = defineBackend({
   listSensors,
   sendSensorValue,
   createTracker,
-  sendDeviceValue
+  sendDeviceValue,
+  sendNotification
 })
 
 // disable unauthenticated access
@@ -188,6 +192,38 @@ sendSensorValueLambda.addPermission('AllowIoTInvoke', {
   principal: new ServicePrincipal('iot.amazonaws.com'),
   sourceArn: `arn:aws:iot:${iotStack.region}:${iotStack.account}:rule/SendSensorValueRule*`
 })
+
+// Geofence Monitoring Setup
+const sendNotificationLambda = backend.sendNotification.resources.lambda;
+
+// Add permissions for the geofence monitor to access Location Service
+sendNotificationLambda.addToRolePolicy(
+  new PolicyStatement({
+    actions: [
+      "geo:*"
+    ],
+    resources: ["*"]
+  })
+);
+
+// Create EventBridge rule for geofence breach events
+const geofenceRule = new events.Rule(backend.data.resources.cfnResources.cfnGraphqlApi, "GeofenceBreachRule", {
+  ruleName: "GeofenceEventDetectionCustomRule",
+  description: "Rule to detect when trackers exit geofence boundaries",
+  eventPattern: {
+    source: ["aws.geo"],
+    detailType: ["Location Geofence Event"]
+  }
+});
+
+// Add Lambda as target for the rule
+geofenceRule.addTarget(new targets.LambdaFunction(sendNotificationLambda));
+
+// Add permissions for EventBridge to invoke the Lambda
+sendNotificationLambda.addPermission("AllowEventBridgeInvocation", {
+  principal: new ServicePrincipal("events.amazonaws.com"),
+  sourceArn: geofenceRule.ruleArn
+});
 
 // // custom rule
 // const ruleCreateTracker = new CfnTopicRule(iotStack, "CreateTrackerRule", {

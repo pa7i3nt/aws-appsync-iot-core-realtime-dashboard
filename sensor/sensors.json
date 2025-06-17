@@ -7,8 +7,8 @@
     "firmware": "1.30",
     "frequency": 3800,
     "geo": {
-      "latitude": 37.751372,
-      "longitude": -122.359999
+      "longitude": 80.12006711959839,
+      "latitude": 70.28530351226359
     },
     "settings": {
       "host": "a24lhwjvpuqsrx-ats.iot.ap-southeast-1.amazonaws.com",
